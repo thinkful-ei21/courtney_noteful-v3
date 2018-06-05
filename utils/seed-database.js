@@ -9,7 +9,9 @@ const Note = require('../models/note');
 const seedNotes = require('../db/seed/notes');
 
 
-console.log(Note);
+// console.log(Note);
+
+
 mongoose.connect(MONGODB_URI)
   .then(() => mongoose.connection.db.dropDatabase())
   .then(() => Note.insertMany(seedNotes))
