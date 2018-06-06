@@ -37,7 +37,7 @@ describe('Running note tests', function() {
 
 
 
-	describe.only('GET TESTS', function() {
+	describe('GET TESTS', function() {
 
 		describe('GET /api/note', function() {
 			it('should return all notes', function() {
@@ -51,6 +51,11 @@ describe('Running note tests', function() {
 					expect(res.body).to.be.a('array');
 					expect(res.body).to.have.length(notes.length);
 					expect(res.body).to.not.be.null;
+
+					res.body.forEach(function(note) {
+						expect(note).to.be.a('object');
+						expect(note).to.include.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+					});
 				});
 			});
 		});
@@ -117,6 +122,36 @@ describe('Running note tests', function() {
 
 	});
 
+
+	describe('PUT TESTS', function() {
+
+		describe('PUT /api/notes/:id', function() {
+			it('should update a note with new data', function() {
+				const updateNote = {
+					"title": "Cheesus",
+					"content": "Lord of all cheeses..."
+				};
+
+				return Note.findOne()
+					.then(function(randomNote) {
+						updateNote.id = randomNote.id;
+
+						return chai.request(app)
+							.put(`/api/notes/${updateNote.id}`)
+							.send(updateNote);
+					})
+					.then(res => {
+						expect(res).to.have.status(200);
+						return Note.findById(updateNote.id);
+					})
+					.then(updated => {
+						expect(updated.id).to.equal(updateNote.id);
+						expect(updated.title).to.equal(updateNote.title);
+						expect(updated.content).to.equal(updateNote.content);
+					});
+			});
+		});
+	});
 
 
 	
