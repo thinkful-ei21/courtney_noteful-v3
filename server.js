@@ -46,7 +46,8 @@ app.use((err, req, res, next) => {
 });
 
 // Listen for incoming connections
-if (process.env.NODE_ENV !== 'test') {
+// if (process.env.NODE_ENV !== 'test') {
+if (require.main === module) {
   // Connect to DB and Listen for incoming connections
   mongoose.connect(MONGODB_URI)
     .then(instance => {
