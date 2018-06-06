@@ -4,7 +4,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const mongoose = require('mongoose');
 
-const {app} = require('../server');
+const app = require('../server');
 const {TEST_MONGODB_URI} = require('../config');
 
 const Note = require('../models/note');
@@ -15,7 +15,8 @@ chai.use(chaiHttp);
 
 
 
-describe('Running all note tests', function() {
+describe('Running note tests', function() {
+
 	before(function() {
 		return mongoose.connect(TEST_MONGODB_URI)
 			.then(() => mongoose.connection.db.dropDatabase());
@@ -33,7 +34,85 @@ describe('Running all note tests', function() {
 		return mongoose.disconnect();
 	});
 
+	describe('POST /api/notes', function() {
+		it('should create and return a new note if input is valid', function() {
+			const newNote = {
+				"title": "Cats Rule the World",
+				"content": "The Title Says it All"
+			};
+
+			let res;
+			return chai.request(app)
+				.post('/api/notes')
+				.send(newNote)
+				.then(function(response) {
+					res = response;
+					expect(res).to.have.status(201);
+					expect(res).to.have.header('location');
+					expect(res).to.be.json;
+					expect(res.body).to.be.a('object');
+					expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+					expect(res.body.id).to.not.be.null;
+					return Note.findById(res.body.id);
+				})
+				.then(newNote => {
+					expect(res.body.id).to.equal(newNote.id);
+					expect(res.body.title).to.equal(newNote.title);
+					expect(res.body.content).to.equal(newNote.content);
+					expect(new Date(res.body.createdAt)).to.eql(newNote.createdAt);
+					expect(new Date(res.body.updatedAt)).to.eql(newNote.updatedAt);
+				});
+		});
+	});
+
+
+	describe('GET /api/notes/:id', function() {
+		it('should return correct note with matching id', function() {
+			let note;
+			return Note.findOne()
+				.then(randomNote => {
+					note = randomNote;
+					return chai.request(app)
+						.get(`/api/notes/${note.id}`);
+				})
+				.then(res => {
+					expect(res).to.have.status(200);
+					expect(res).to.be.json;
+					expect(res).to.be.a('object');
+					expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+					expect(res.body.id).to.not.be.null;
+
+					expect(res.body.id).to.equal(note.id);
+					expect(res.body.title).to.equal(note.title);
+					expect(res.body.content).to.equal(note.content);
+					expect(new Date(res.body.createdAt)).to.eql(note.createdAt);
+					expect(new Date(res.body.updatedAt)).to.eql(note.updatedAt);
+				});
+		});
+	});
+
+
+
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
