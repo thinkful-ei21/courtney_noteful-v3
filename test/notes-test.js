@@ -154,7 +154,7 @@ describe('Running note tests', function() {
 	});
 
 
-	describe.only('DELETE TESTS', function() {
+	describe('DELETE TESTS', function() {
 
 		describe('DELETE /api/notes', function() {
 			it('should delete a note at a specific id', function() {
