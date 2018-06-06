@@ -154,6 +154,28 @@ describe('Running note tests', function() {
 	});
 
 
+	describe.only('DELETE TESTS', function() {
+
+		describe('DELETE /api/notes', function() {
+			it('should delete a note at a specific id', function() {
+				let note;
+
+				return Note.findOne()
+					.then(randomNote => {
+						note = randomNote;
+						return chai.request(app)
+							.delete(`/api/notes/${note.id}`);
+					})
+					.then(res => {
+						expect(res).to.have.status(204);
+						return Note.findById(note.id);
+					})
+					.then(deletedNote => {
+						expect(deletedNote).to.be.null;
+					});
+			});
+		});
+	});
 	
 
 
