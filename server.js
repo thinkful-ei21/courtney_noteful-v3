@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const { PORT, MONGODB_URI } = require('./config');
 
 const notesRouter = require('./routes/notes');
+const testRouter = require('./routes/test');
 
 // Create an Express application
 const app = express();
@@ -24,6 +25,7 @@ app.use(express.json());
 
 // Mount routers
 app.use('/api/notes', notesRouter);
+app.use('/api/test', testRouter);
 
 // Custom 404 Not Found route handler
 app.use((req, res, next) => {
@@ -56,7 +58,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.error('\n === Did you remember to start `mongod`? === \n');
     console.error(err);
   });
-  
+
   app.listen(PORT, function () {
     console.info(`Server listening on ${this.address().port}`);
   }).on('error', err => {
