@@ -16,11 +16,15 @@ router.get('/', (req, res, next) => {
   //   { id: 3, title: 'Temp 3' }
   // ]);
 
-  const searchTerm = req.query.searchTerm;
+  const {searchTerm, folderId} = req.query;
   let filter = {};
 
   if (searchTerm) {
     filter.title = { $regex: searchTerm };
+  }
+
+  if (folderId) {
+    filter.id = { folderId };
   }
 
   Note.find(filter)
@@ -66,7 +70,7 @@ router.post('/', (req, res, next) => {
   // console.log('Create a Note');
   // res.location('path/to/new/document').status(201).json({ id: 2, title: 'Temp 2' });
 
-  const { title, content } = req.body;
+  const { title, content, folderId } = req.body;
 
   if(!title) {
     const err = new Error('Missing `title` in request body');
@@ -74,7 +78,13 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  const newNote = {title, content};
+  if(!mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error('The `folderId` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
+  const newNote = {title, content, folderId};
 
   Note.create(newNote)
     .then(note => {
@@ -91,10 +101,23 @@ router.put('/:id', (req, res, next) => {
   // console.log('Update a Note');
   // res.json({ id: 1, title: 'Updated Temp 1' });
 
-  const id = req.params.id;
-  const {title, content} = req.body;
+  const {id} = req.params;
+  const {title, content, folderId} = req.body;
 
-  const updateNote = {title, content};
+
+  if(!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error('The `noteId` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error('The `folderId` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
+  const updateNote = {title, content, folderId};
 
   Note.findByIdAndUpdate(id,
     updateNote, 
