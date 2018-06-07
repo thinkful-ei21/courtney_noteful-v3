@@ -11,6 +11,7 @@ const seedNotes = require('../db/seed/notes');
 
 // console.log(Note);
 
+console.log(MONGODB_URI);
 
 mongoose.connect(MONGODB_URI)
   .then(() => mongoose.connection.db.dropDatabase())
