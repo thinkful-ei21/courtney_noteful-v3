@@ -16,7 +16,7 @@ router.get('/', (req, res, next) => {
   //   { id: 3, title: 'Temp 3' }
   // ]);
 
-  const {searchTerm, folderId} = req.query;
+  const {searchTerm, folderId, tagId} = req.query;
   let filter = {};
 
   if (searchTerm) {
@@ -24,10 +24,15 @@ router.get('/', (req, res, next) => {
   }
 
   if (folderId) {
-    filter.id = { folderId };
+    filter.folderId = folderId;
+  }
+
+  if (tagId) {
+    filter.tags = tagId;
   }
 
   Note.find(filter)
+    .populate('tags')
     .sort({ _id: 'asc' })
     .then(allNotes => {
       if (allNotes) {
@@ -54,6 +59,7 @@ router.get('/:id', (req, res, next) => {
   }
   
   Note.findById(searchId)
+    .populate('tags')
     .then(note => {
       if(note) {
         res.json(note);
@@ -70,7 +76,7 @@ router.post('/', (req, res, next) => {
   // console.log('Create a Note');
   // res.location('path/to/new/document').status(201).json({ id: 2, title: 'Temp 2' });
 
-  const { title, content, folderId } = req.body;
+  const { title, content, folderId, tags = [] } = req.body;
 
   if(!title) {
     const err = new Error('Missing `title` in request body');
@@ -84,7 +90,17 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  const newNote = {title, content, folderId};
+  if(tags) {
+    tags.forEach(tagId => {
+      if(!mongoose.Types.ObjectId.isValid(tagId)) {
+        const err = new Error('The `tagId` is not valid');
+        err.status = 400;
+        return next(err);
+      }
+    });
+  }
+
+  const newNote = {title, content, folderId, tags};
 
   Note.create(newNote)
     .then(note => {
@@ -102,7 +118,7 @@ router.put('/:id', (req, res, next) => {
   // res.json({ id: 1, title: 'Updated Temp 1' });
 
   const {id} = req.params;
-  const {title, content, folderId} = req.body;
+  const {title, content, folderId, tags = []} = req.body;
 
 
   if(!mongoose.Types.ObjectId.isValid(id)) {
@@ -117,13 +133,23 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
+  if (tags) {
+    tags.forEach((tagId) => {
+      if(!mongoose.Types.ObjectId.isValid(tagId)) {
+        const err = new Error('The `tagId` is not vaild');
+        err.status = 400;
+        return next(err);
+      }
+    });
+  }
+
   if(!title) {
     const err = new Error('Missing `title` in request body');
     err.status = 400;
     return next(err);
   }
 
-  const updateNote = {title, content, folderId};
+  const updateNote = {title, content, folderId, tags};
 
   Note.findByIdAndUpdate(id,
     updateNote, 
@@ -145,6 +171,12 @@ router.delete('/:id', (req, res, next) => {
   // res.status(204).end();
 
   const id = req.params.id;
+
+  if(!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error('`id` is not valid');
+    err.status = 400;
+    return next(err);
+  }
 
   Note.findByIdAndRemove(id)
     .then(() => {

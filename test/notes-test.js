@@ -9,9 +9,11 @@ const {TEST_MONGODB_URI} = require('../config');
 
 const Note = require('../models/note');
 const Folder = require('../models/folders');
+const Tags = require('../models/tags');
 
 const seedNotes = require('../db/seed/notes');
 const seedFolders = require('../db/seed/folders');
+const seedTags = require('../db/seed/tags');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -28,7 +30,8 @@ describe('Running note tests', function() {
 	beforeEach(function() {
 		return Promise.all([
 			Note.insertMany(seedNotes),
-			Folder.insertMany(seedFolders)
+			Folder.insertMany(seedFolders),
+			Tags.insertMany(seedTags)
 		])
 		.then(() => {
 			return Note.createIndexes();
@@ -63,7 +66,7 @@ describe('Running note tests', function() {
 
 					res.body.forEach(function(note) {
 						expect(note).to.be.a('object');
-						expect(note).to.include.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+						expect(note).to.include.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
 					});
 				});
 			});
@@ -82,7 +85,7 @@ describe('Running note tests', function() {
 						expect(res).to.have.status(200);
 						expect(res).to.be.json;
 						expect(res).to.be.a('object');
-						expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+						expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
 						expect(res.body.id).to.not.be.null;
 
 						expect(res.body.id).to.equal(note.id);
@@ -115,7 +118,7 @@ describe('Running note tests', function() {
 						expect(res).to.have.header('location');
 						expect(res).to.be.json;
 						expect(res.body).to.be.a('object');
-						expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+						expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'tags');
 						expect(res.body.id).to.not.be.null;
 						return Note.findById(res.body.id);
 					})
@@ -154,7 +157,7 @@ describe('Running note tests', function() {
 						expect(res).to.have.status(200);
 						expect(res).to.be.json;
 	          expect(res.body).to.be.a('object');
-	          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+	          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
 
 						return Note.findById(updateNote.id);
 					})
