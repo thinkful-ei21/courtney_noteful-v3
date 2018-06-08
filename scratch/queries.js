@@ -31,19 +31,19 @@ const Note = require('../models/note');
 //   });
 
 
-  mongoose.connect(MONGODB_URI)
-    .then(() => Note.findOne())
-    .then(id => Note.findById(id._id))
-    .then(note => {
-      console.log(note);
-    })
-    .then(() => {
-      return mongoose.disconnect()
-    })
-    .catch(err => {
-      console.error(`ERROR: ${err.message}`);
-      console.error(err);
-    });
+  // mongoose.connect(MONGODB_URI)
+  //   .then(() => Note.findOne())
+  //   .then(id => Note.findById(id._id))
+  //   .then(note => {
+  //     console.log(note);
+  //   })
+  //   .then(() => {
+  //     return mongoose.disconnect()
+  //   })
+  //   .catch(err => {
+  //     console.error(`ERROR: ${err.message}`);
+  //     console.error(err);
+  //   });
 
 
 

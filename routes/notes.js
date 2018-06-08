@@ -20,7 +20,7 @@ router.get('/', (req, res, next) => {
   let filter = {};
 
   if (searchTerm) {
-    filter.title = { $regex: searchTerm };
+    filter.title = { $regex: /searchTerm/i };
   }
 
   if (folderId) {
@@ -78,7 +78,7 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  if(!mongoose.Types.ObjectId.isValid(folderId)) {
+  if(folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
     const err = new Error('The `folderId` is not valid');
     err.status = 400;
     return next(err);
@@ -113,6 +113,12 @@ router.put('/:id', (req, res, next) => {
 
   if(!mongoose.Types.ObjectId.isValid(folderId)) {
     const err = new Error('The `folderId` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
+  if(!title) {
+    const err = new Error('Missing `title` in request body');
     err.status = 400;
     return next(err);
   }

@@ -8,7 +8,10 @@ const app = require('../server');
 const {TEST_MONGODB_URI} = require('../config');
 
 const Note = require('../models/note');
+const Folder = require('../models/folders');
+
 const seedNotes = require('../db/seed/notes');
+const seedFolders = require('../db/seed/folders');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -23,7 +26,13 @@ describe('Running note tests', function() {
 	});
 
 	beforeEach(function() {
-		return Note.insertMany(seedNotes);
+		return Promise.all([
+			Note.insertMany(seedNotes),
+			Folder.insertMany(seedFolders)
+		])
+		.then(() => {
+			return Note.createIndexes();
+		});
 	});
 
 	afterEach(function() {
@@ -44,7 +53,7 @@ describe('Running note tests', function() {
 				return Promise.all([
 					Note.find(),
 					chai.request(app).get('/api/notes')
-					])
+				])
 				.then(([notes, res]) => {
 					expect(res).to.have.status(200);
 					expect(res).to.be.json;
@@ -54,7 +63,7 @@ describe('Running note tests', function() {
 
 					res.body.forEach(function(note) {
 						expect(note).to.be.a('object');
-						expect(note).to.include.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+						expect(note).to.include.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
 					});
 				});
 			});
@@ -73,7 +82,7 @@ describe('Running note tests', function() {
 						expect(res).to.have.status(200);
 						expect(res).to.be.json;
 						expect(res).to.be.a('object');
-						expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+						expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
 						expect(res.body.id).to.not.be.null;
 
 						expect(res.body.id).to.equal(note.id);
@@ -135,6 +144,7 @@ describe('Running note tests', function() {
 				return Note.findOne()
 					.then(function(randomNote) {
 						updateNote.id = randomNote.id;
+						updateNote.folderId = randomNote.folderId;
 
 						return chai.request(app)
 							.put(`/api/notes/${updateNote.id}`)
@@ -142,6 +152,10 @@ describe('Running note tests', function() {
 					})
 					.then(res => {
 						expect(res).to.have.status(200);
+						expect(res).to.be.json;
+	          expect(res.body).to.be.a('object');
+	          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+
 						return Note.findById(updateNote.id);
 					})
 					.then(updated => {
