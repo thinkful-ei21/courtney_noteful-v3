@@ -29,9 +29,9 @@ router.get('/', (req, res, next) => {
 
   Note.find(filter)
     .sort({ _id: 'asc' })
-    .then(results => {
-      if (results) {
-        res.json(results);
+    .then(allNotes => {
+      if (allNotes) {
+        res.json(allNotes);
       } else {
         next();
       }
