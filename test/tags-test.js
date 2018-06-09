@@ -61,6 +61,20 @@ describe('Running tag tests', function() {
 					});
 				});
 			});
+
+
+			it('should return 404 error status if endpoint is invalid', function() {
+				return Promise.all([
+					Tags.find(),
+					chai.request(app).get('/api/tag')
+				])
+				.then(([tags, res]) => {
+					expect(res).to.have.status(404);
+					expect(res).to.be.json;
+					expect(res).to.be.a('object');
+					expect(res.body).to.have.keys('status', 'message');
+				});
+			});
 		});
 
 		describe('GET /api/tags/:id', function() {
@@ -82,6 +96,28 @@ describe('Running tag tests', function() {
 						expect(res.body.id).to.equal(tags.id);
 						expect(res.body.name).to.equal(tags.name);
 					});
+			});
+
+
+			it('should return 400 error status if id is invalid', function() {
+				return chai.request(app)
+					.get(`/api/tags/a`)
+					.then(res => {
+						expect(res).to.have.status(400);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
+
+
+			it('should return 404 error status if folder is not found', function() {
+				return chai.request(app)
+				.get('/api/tags/211111111111111111111100')
+				.then(res => {
+					expect(res).to.have.status(404);
+					expect(res).to.be.json;
+					expect(res).to.be.a('object');
+				});
 			});
 		});
 	});
@@ -114,6 +150,22 @@ describe('Running tag tests', function() {
 						expect(res.body.name).to.equal(newTag.name);
 					});
 			});
+
+
+			it('should return 400 error status if name is not provided', function() {
+				const invalidTags = {
+					"name": null
+				};
+
+				return chai.request(app)
+					.post(`/api/tags`)
+					.send(invalidTags)
+					.then(res => {
+						expect(res).to.have.status(400);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
 		});
 
 	});
@@ -144,6 +196,49 @@ describe('Running tag tests', function() {
 						expect(updated.name).to.equal(updateTag.name);
 					});
 			});
+
+
+			it('should return 400 error status if id is invalid', function() {
+				return chai.request(app)
+					.put(`/api/tags/a`)
+					.then(res => {
+						expect(res).to.have.status(400);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
+
+
+			it('should return 404 error status if name is not provided', function() {
+				const updateTag = {
+					"title": "Cheesus"
+				};
+
+				return chai.request(app)
+					.put(`/api/tags`)
+					.send(updateTag)
+					.then(res => {
+						expect(res).to.have.status(404);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
+
+
+			it('should return 404 error status if folder is not found', function() {
+				const updateTag = {
+					"name": "Cheesus"
+				};
+
+				return chai.request(app)
+				.put('/api/folders/211111111111111111111100')
+				.send(updateTag)
+				.then(res => {
+					expect(res).to.have.status(404);
+					expect(res).to.be.json;
+					expect(res).to.be.a('object');
+				});
+			});
 		});
 	});
 
@@ -166,6 +261,17 @@ describe('Running tag tests', function() {
 					})
 					.then(deletedTag => {
 						expect(deletedTag).to.be.null;
+					});
+			});
+
+
+			it('should return 400 error status if id is invalid', function() {
+				return chai.request(app)
+					.put(`/api/tags/a`)
+					.then(res => {
+						expect(res).to.have.status(400);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
 					});
 			});
 		});

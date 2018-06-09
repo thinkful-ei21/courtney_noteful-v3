@@ -97,7 +97,7 @@ router.put('/:id', (req, res, next) => {
 
 	Folder.findByIdAndUpdate(updateId,
 		updatedFolder,
-		{upsert: true, new: true})
+		{new: true})
 		.then(folder => {
 			// console.log(folder);
 			if(folder) {

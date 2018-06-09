@@ -43,7 +43,7 @@ describe('Running folder tests', function() {
 	describe('GET TESTS', function() {
 
 		describe('GET /api/folders', function() {
-			it('should return all notes', function() {
+			it('should return all notes with valid query', function() {
 				return Promise.all([
 					Folder.find(),
 					chai.request(app).get('/api/folders')
@@ -59,6 +59,19 @@ describe('Running folder tests', function() {
 						expect(folders).to.be.a('object');
 						expect(folders).to.include.keys('id', 'name', 'createdAt', 'updatedAt');
 					});
+				});
+			});
+
+			it('should return 404 error status if endpoint is invalid', function() {
+				return Promise.all([
+					Folder.find(),
+					chai.request(app).get('/api/folder')
+				])
+				.then(([folders, res]) => {
+					expect(res).to.have.status(404);
+					expect(res).to.be.json;
+					expect(res).to.be.a('object');
+					expect(res.body).to.have.keys('status', 'message');
 				});
 			});
 		});
@@ -84,6 +97,26 @@ describe('Running folder tests', function() {
 						expect(new Date(res.body.createdAt)).to.eql(folder.createdAt);
 						expect(new Date(res.body.updatedAt)).to.eql(folder.updatedAt);
 					});
+			});
+
+			it('should return 400 error status if id is invalid', function() {
+				return chai.request(app)
+					.get(`/api/folders/a`)
+					.then(res => {
+						expect(res).to.have.status(400);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
+
+			it('should return 404 error status if folder is not found', function() {
+				return chai.request(app)
+				.get('/api/folders/211111111111111111111100')
+				.then(res => {
+					expect(res).to.have.status(404);
+					expect(res).to.be.json;
+					expect(res).to.be.a('object');
+				});
 			});
 		});
 	});
@@ -118,6 +151,21 @@ describe('Running folder tests', function() {
 						expect(new Date(res.body.updatedAt)).to.eql(newFolder.updatedAt);
 					});
 			});
+
+			it('should return 400 error status if name is not provided', function() {
+				const invalidFolder = {
+					"name": null
+				};
+
+				return chai.request(app)
+					.post(`/api/folders`)
+					.send(invalidFolder)
+					.then(res => {
+						expect(res).to.have.status(400);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
 		});
 
 	});
@@ -148,6 +196,49 @@ describe('Running folder tests', function() {
 						expect(updated.name).to.equal(updateFolder.name);
 					});
 			});
+
+
+			it('should return 400 error status if id is invalid', function() {
+				return chai.request(app)
+					.put(`/api/folders/a`)
+					.then(res => {
+						expect(res).to.have.status(400);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
+
+
+			it('should return 404 error status if name is not provided', function() {
+				const updateFolder = {
+					"title": "Cheesus"
+				};
+
+				return chai.request(app)
+					.put(`/api/folders`)
+					.send(updateFolder)
+					.then(res => {
+						expect(res).to.have.status(404);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
+
+
+			it('should return 404 error status if folder is not found', function() {
+				const updateFolder = {
+					"name": "Cheesus"
+				};
+
+				return chai.request(app)
+				.put('/api/folders/211111111111111111111100')
+				.send(updateFolder)
+				.then(res => {
+					expect(res).to.have.status(404);
+					expect(res).to.be.json;
+					expect(res).to.be.a('object');
+				});
+			});
 		});
 	});
 
@@ -172,13 +263,19 @@ describe('Running folder tests', function() {
 						expect(deletedFolder).to.be.null;
 					});
 			});
+
+
+			it('should return 400 error status if id is invalid', function() {
+				return chai.request(app)
+					.put(`/api/folders/a`)
+					.then(res => {
+						expect(res).to.have.status(400);
+						expect(res).to.be.json;
+						expect(res).to.be.a('object');
+					});
+			});
 		});
 	});
-	
-
-
-
-
 
 });
 
